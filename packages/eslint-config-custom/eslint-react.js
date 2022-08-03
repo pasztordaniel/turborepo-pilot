@@ -1,6 +1,8 @@
 module.exports = {
   root: true,
-  extends: ['custom', 'airbnb', 'airbnb/hooks'],
+  extends: ['custom', 'airbnb'],
+  parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint'],
   settings: {
     next: {
       rootDir: ['apps/*/'],
@@ -26,6 +28,14 @@ module.exports = {
         jsx: 'never',
         ts: 'never',
         tsx: 'never',
+      },
+    ],
+    '@typescript-eslint/naming-convention': [
+      'error',
+      {
+        selector: 'interface',
+        format: ['PascalCase'],
+        prefix: ['I'],
       },
     ],
   },
