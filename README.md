@@ -55,8 +55,8 @@ Alapértelmezés szerint az `apps` és `packages` mappákban található összes
 
 Fontos a workspace nevének megadása, mivel a későbbiekben erre a névre hiatkozva lehet futtatni parancsokat. A workspace nevének beállítása, a workspace-en belül található package.json `name` mezőjében adható meg, a könnyebb azonosítás érdekében érdemes ennek a névnek a mappa nevével párhuzamban lennie:
 
-```json
-# apps/web/package.json
+```json5
+// apps/web/package.json
 {
     "name": "web",
     ...
@@ -95,7 +95,8 @@ yarn workspace web add react -D
 
 A jobb teljesítmény érdekében, érdemes a beépített `tubo` használatával futtatni az alkalmazásokat, ez lehetővé teszi, több alkalmazás egyidejű futtatását is. A gyakrabban használt parancsokat érdemes lehet kiemelni a projekt rootban található package.json-ba, elnevezésnél törekedni kell a megkülönböztethetőségre, hogy tisztán kivehető legyen belőle a használt workspace is:
 
-```json
+```json5
+// package.json
 {
     "scripts": {
         "dev:backend": "dev:backend": "turbo run dev --filter=backend",
