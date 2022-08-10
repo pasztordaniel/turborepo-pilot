@@ -39,6 +39,8 @@ A projektstruktúrát tekintve két fő mappa található: `apps` és `packages`
 
 ## Workspace
 
+### Workspace létrehozása
+
 A turborepo [workspace](https://docs.npmjs.com/cli/v7/using-npm/workspaces)-ek segítségével különíti el egymástól a különböző alkalmazásokat és közösen felhhasználható konfigurációkat és kódrészleteket. A workspace-ek a projekt root-ban található `package.json`-ban vannak beállítva:
 
 ```json
@@ -63,11 +65,15 @@ Fontos a workspace nevének megadása, mivel a későbbiekben erre a névre hiat
 }
 ```
 
+### Függőségek
+
 A workspace-ek egyik előnye, hogy minden függőség a projekt rootban található node_modules-ba kerül, így ha több projektnek közös függősége van, akkor abból csak egy példányt kell fenntartani (ennek oka az a jelenség, hogy a workspace-eken belül található node_modules mappa pár elem kivételével, gyakorlatilag üres).
 
 > **FONTOS:**
 >
 > Ha több alkalmazásnak azonos függősége van, akkor érdemes azonos verziószámot használni mindenhol, mert a különböző verziók hajlamosak összeakadni.
+
+### Függőségek kizárása
 
 Előfordulhat olyan eset, mikor egy workspace-nek a függősége megkívánja, hogy teljesen lokális legyen (pld.: többi alkalmazás által használt függőségtől eltérő verziószám), akkor fel kell venni a függőséget a projekt rootban található package.json `workspaces/nohoist` alá a függőséget. [További infó](https://classic.yarnpkg.com/blog/2018/02/15/nohoist/).
 
@@ -83,6 +89,37 @@ Vannak olyan projektek, amik sajnos nem támogatják a workspace-ek használatá
 
 Ez a beállítás, elintézi, hogy a workspace összes dependenciája a saját node_modules mappájába kerüljön.
 
+### Packege-ek exportálása más workspace-ből
+
+A workspace-ek egy másik előnye, hogy egy workspace-ben megírt kód újra felhasználható másik workspace-ben is. Ehhez az adott workspace pasckage.json fájljában meg kell adni egy `main` és egy `types` mezőt, amik azokra a fájlokra mutatnak, ahol exportálva vannak a megosztani kívánt kódok:
+
+```json5
+// packages/models/package.json
+{
+    ...
+    "main": "./index.ts",
+    "types": "./index.ts",
+    ...
+}
+```
+
+### Package-ek importálása más workspace-ből
+
+Ahhoz, hogy más workspaceben exportált package felhasználható legyen a saját workspace-ünkben, ahhoz az adott workspace package.json fájlában fel kell venni a dependenciák közé a importálni kívánt workspace nevét:
+
+```json5
+// apps/web/package.json
+{
+    ...
+    "dependencies": {
+        ...
+        "models": "*", // másik workspace neve
+        ...
+    }
+    ...
+}
+```
+
 ## Yarn parancsok
 
 Yarn parancsokat érdemes a projekt rootban futtatni, hogy elkerüljük a hibás működést és minél optimalizáltabb futási teljesítményt érjünk el. A workspace-ek használata minimálisan több gépelést igényelnek, a parancs futtatása előtt meg kell adni, hogy melyik workspace-ben kerüljön futtatásra a parancs, a parancsok futtatásának módja a következő:
@@ -93,19 +130,19 @@ yarn workspace {workspace-neve} {yarn parancs ...}
 yarn workspace web add react -D
 ```
 
-A jobb teljesítmény érdekében, érdemes a beépített `tubo` használatával futtatni az alkalmazásokat, ez lehetővé teszi, több alkalmazás egyidejű futtatását is. A gyakrabban használt parancsokat érdemes lehet kiemelni a projekt rootban található package.json-ba, elnevezésnél törekedni kell a megkülönböztethetőségre, hogy tisztán kivehető legyen belőle a használt workspace is:
+A jobb teljesítmény érdekében, érdemes a beépített `turbo` használatával futtatni az alkalmazásokat, ez lehetővé teszi, több alkalmazás egyidejű futtatását is. A gyakrabban használt parancsokat érdemes lehet kiemelni a projekt rootban található package.json-ba, elnevezésnél törekedni kell a megkülönböztethetőségre, hogy tisztán kivehető legyen belőle a használt workspace is:
 
 ```json5
 // package.json
 {
     "scripts": {
-        "dev:backend": "dev:backend": "turbo run dev --filter=backend",
+        "dev:backend": "turbo run dev --filter=backend",
         "dev:web": "turbo run dev --filter=backend --filter=web", // ha az egyik app működése függ a másik működésétől, akkor ilyen módon egyszerre is indítható
     }
 }
 ```
 
-ugyanez terminalban:
+Használat terminalban:
 
 ```bash
 yarn dev:backend
@@ -121,3 +158,30 @@ yarn workspace backend db:reset
 cd ./apps/backend
 yarn db:reset
 ```
+
+## Konfiguráció
+
+Monorepo projektekben lehetőség van az egész projektre és workspace szinten is konfigurációk megadására. A projekt szintű konfigurációk a projekt rootban laknak, de ha ezt egy workspace-en belül felülírjuk egy másik konfigurációval, akkor az adott workspace-re az a beállítás lesz ar érvényes. Újra felhasználható konfigurációk megadhatóak a `packages` mappa alatt található workspace-ekben.
+
+### Lint
+
+Az újra felhasználható eslint konfigurációk a `eslint-config-custom` workspace-ben találhatóak, ami a `packages/eslint-config-custom` mappában található. Itt szabadon felvehetőek új konfigurációk is.
+
+A kofiguráció workspace-ben való használatához importálni kell dependenciaként, illetve importálni kell az `.eslintrc.js` fájlban is:
+
+```js
+// apps/web/.eslintrc.js
+module.exports = require('eslint-config-custom/eslint-react');
+```
+
+### Ts config
+
+## Lint
+
+## Prettier
+
+## Projekt szintű Vscode beállítások
+
+## Projektben snintű snippetek
+
+
